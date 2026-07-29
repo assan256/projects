@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Расписание</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@600;700&display=swap');
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: radial-gradient(circle at 50% 30%, #1e293b 0%, #0f172a 100%);
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      color: #f8fafc;
+      padding: 30px 20px;
+    }
+
+    .wrapper {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 50px;
+      align-items: center;
+      justify-content: center;
+      max-width: 1100px;
+      width: 100%;
+    }
+
+    /* Часовая секция */
+    .clock-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .clock-container {
+      position: relative;
+      width: 440px;
+      height: 440px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-radius: 50%;
+      background: rgba(15, 23, 42, 0.6);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.02);
+    }
+
+    /* Цветовой циферблат */
+    .clock-face {
+      width: 330px;
+      height: 330px;
+      border-radius: 50%;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      /*
+        Расчёт углов (1ч = 15°, 1мин = 0.25°):
+        00:00 - 06:00: Сон (Тёмно-серый)
+        06:00 - 06:40: Завтрак (Жёлтый)
+        06:40 - 07:40: Личное время (Белый)
+        07:40 - 08:00: На работу (Зелёный)
+        08:00 - 13:00: Работа (Синий)
+        13:00 - 14:30: Обед (Жёлтый)
+        14:30 - 17:30: Работа (Синий)
+        17:30 - 18:00: Дорога домой (Зелёный)
+        18:00 - 19:30: Личное время (Белый)
+        19:30 - 20:00: Ужин (Жёлтый)
+        20:00 - 22:30: Семейное время (Фиолетовый)
+        22:30 - 22:45: Отход ко сну (Светло-серый)
+        22:45 - 24:00: Сон (Тёмно-серый)
+      */
+      background: conic-gradient(
+        #4b5563 0deg 90deg,         /* Сон */
+        #f59e0b 90deg 100deg,       /* Завтрак */
+        #f8fafc 100deg 115deg,      /* Личное время */
+        #10b981 115deg 120deg,      /* На работу */
+        #3b82f6 120deg 195deg,      /* Работа */
+        #f59e0b 195deg 217.5deg,    /* Обед */
+        #3b82f6 217.5deg 262.5deg,  /* Работа */
+        #10b981 262.5deg 270deg,    /* Дорога домой */
+        #f8fafc 270deg 292.5deg,    /* Личное время */
+        #f59e0b 292.5deg 300deg,    /* Ужин */
+        #a855f7 300deg 337.5deg,    /* Семейное время */
+        #9ca3af 337.5deg 341.25deg, /* Отход ко сну */
+        #4b5563 341.25deg 360deg    /* Сон */
+      );
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Часовые засечки */
+    .tick-mark {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: 2px;
+      height: 10px;
+      background-color: rgba(0, 0, 0, 0.35);
+      transform-origin: 50% 165px;
+      margin-left: -1px;
+    }
+
+    /* Черные стрелки */
+    .hand {
+      position: absolute;
+      bottom: 50%;
+      left: 50%;
+      transform-origin: bottom center;
+      border-radius: 4px;
+    }
+
+    .hand.hour {
+      width: 8px;
+      height: 95px;
+      background: #000000;
+      border: 1.5px solid #ffffff;
+      margin-left: -4px;
+      z-index: 10;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.6);
+    }
+
+    .hand.minute {
+      width: 5px;
+      height: 130px;
+      background: #000000;
+      border: 1.5px solid #ffffff;
+      margin-left: -2.5px;
+      z-index: 11;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.6);
+    }
+
+    .hand.second {
+      width: 2px;
+      height: 145px;
+      background: #ef4444;
+      margin-left: -1px;
+      z-index: 12;
+    }
+
+    .clock-center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 16px;
+      height: 16px;
+      background-color: #000000;
+      border: 2px solid #ffffff;
+      border-radius: 50%;
+      z-index: 13;
+    }
+
+    /* Метки часов */
+    .hour-mark {
+      position: absolute;
+      font-size: 13px;
+      font-weight: 600;
+      color: #94a3b8;
+      text-align: center;
+      width: 30px;
+      height: 30px;
+      line-height: 30px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Электронные часы */
+    .digital-clock {
+      margin-top: 25px;
+      font-size: 24px;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 2px;
+      color: #38bdf8;
+      background: rgba(30, 41, 59, 0.8);
+      backdrop-filter: blur(8px);
+      padding: 10px 24px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Легенда */
+    .legend-container {
+      background: rgba(30, 41, 59, 0.7);
+      backdrop-filter: blur(12px);
+      padding: 28px;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+      max-width: 440px;
+      width: 100%;
+    }
+
+    .legend-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .legend-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #f8fafc;
+    }
+
+    .legend-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 13.5px;
+      padding: 8px 12px;
+      background: rgba(15, 23, 42, 0.5);
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      transition: all 0.2s ease;
+    }
+
+    .legend-item:hover {
+      background: rgba(15, 23, 42, 0.85);
+      transform: translateX(4px);
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .legend-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .color-badge {
+      width: 14px;
+      height: 14px;
+      border-radius: 4px;
+      flex-shrink: 0;
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .item-name {
+      font-weight: 500;
+      color: #e2e8f0;
+    }
+
+    .time-range {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 600;
+      color: #94a3b8;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="wrapper">
+    <!-- Часы -->
+    <div class="clock-section">
+      <div class="clock-container" id="clockContainer">
+        <div class="clock-face" id="clockFace"></div>
+        <div class="hand hour" id="hourHand"></div>
+        <div class="hand minute" id="minuteHand"></div>
+        <div class="hand second" id="secondHand"></div>
+        <div class="clock-center"></div>
+      </div>
+      <div class="digital-clock" id="digitalClock">00:00:00</div>
+    </div>
+
+    <!-- Легенда -->
+    <div class="legend-container">
+      <div class="legend-header">
+        <div class="legend-title">Расписание дня</div>
+      </div>
+      <ul class="legend-list">
+        <li class="legend-item">
+          <div class="legend-info">
+            <span class="color-badge" style="background-color: #4b5563;"></span>
+            <span class="item-name">Сон</span>
+          </div>
+          <span class="time-range">22:45 – 06:00</span>
+        </li>
+        <li class="legend-item">
+          <div class="legend-info">
+            <span class="color-badge" style="background-color: #f59e0b;"></span>
+            <span class="item-name">Пробуждение, завтрак</span>
+          </div>
+          <span class="time-range">06:00 – 06:40</span>
+        </li>
+        <li class="legend-item">
+          <div class="legend-info">
+            <span class="color-badge" style="background-color: #f8fafc;"></span>
+            <span class="item-name">Личное время</span>
+          </div>
+          <span class="time-range">06:40 – 07:40</span>
+        </li>
+        <li class="legend-item">
+          <div class="legend-info">
+            <span class="color-badge" style="background-color: #10b981;"></span>
+            <span class="item-name">На работу</span>
+          </div>
+          <span class="time-range">07:40 – 08:00</span>
+        </li>
+        <li class="legend-item">
+          <div class="legend-info">
+            <span class="color-badge" style="background-color: #3b82f6;"></span>
+            <span class="item-name">Время работы</span>
+          </div>
+          <span class="time-range">08:00 – 17:30</span>
+        </li>
+        <li class="legend-item">
+          <div class="legend-info">
+            <span class="color-badge" style="background-color: #f59e0b;"></span>
+            <span class="item-name">Обед</span>
+          </div>
+          <span class="time-range">13:00 – 14:30</span>
+        </li>
+        <li class="legend-item">
+          <div class="legend-info">
+            <span class="color-badge" style="background-color: #10b981;"></span>
+            <span class="item-name">Дорога домой, переодевание</span>
+          </div>
+          <span class="time-range">17:30 – 18:00</span>
+        </li>
+        <li class="legend-item">
+          <div class="legend-info">
+            <span class="color-badge" style="background-color: #f8fafc;"></span>
+            <span class="item-name">Личное время</span>
+          </div>
+          <span class="time-range">18:00 – 19:30</span>
+        </li>
+        <li class="legend-item">
+          <div class="legend-info">
+            <span class="color-badge" style="background-color: #f59e0b;"></span>
+            <span class="item-name">Ужин</span>
+          </div>
+          <span class="time-range">19:30 – 20:00</span>
+        </li>
+        <li class="legend-item">
+          <div class="legend-info">
+            <span class="color-badge" style="background-color: #a855f7;"></span>
+            <span class="item-name">Семейное время</span>
+          </div>
+          <span class="time-range">20:00 – 22:30</span>
+        </li>
+        <li class="legend-item">
+          <div class="legend-info">
+            <span class="color-badge" style="background-color: #9ca3af;"></span>
+            <span class="item-name">Отход ко сну</span>
+          </div>
+          <span class="time-range">22:30 – 22:45</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    const container = document.getElementById('clockContainer');
+    const clockFace = document.getElementById('clockFace');
+
+    // Часовые насечки
+    for (let h = 0; h < 24; h++) {
+      const tick = document.createElement('div');
+      tick.className = 'tick-mark';
+      tick.style.transform = `rotate(${h * 15}deg)`;
+      clockFace.appendChild(tick);
+    }
+
+    // Цифры часов
+    const radius = 188; 
+    const centerX = 220;
+    const centerY = 220;
+
+    for (let h = 0; h < 24; h++) {
+      const angle = (h * 15 - 90) * (Math.PI / 180);
+      const x = centerX + radius * Math.cos(angle) - 15;
+      const y = centerY + radius * Math.sin(angle) - 15;
+
+      const label = document.createElement('div');
+      label.className = 'hour-mark';
+      label.innerText = h < 10 ? '0' + h : h;
+      label.style.left = `${x}px`;
+      label.style.top = `${y}px`;
+
+      if (h % 6 === 0) {
+        label.style.color = '#f8fafc';
+        label.style.fontWeight = '700';
+        label.style.fontSize = '15px';
+      }
+
+      container.appendChild(label);
+    }
+
+    // Стрелки
+    const hourHand = document.getElementById('hourHand');
+    const minuteHand = document.getElementById('minuteHand');
+    const secondHand = document.getElementById('secondHand');
+    const digitalClock = document.getElementById('digitalClock');
+
+    function updateClock() {
+      const now = new Date();
+      const hours = now.getHours();
+      const minutes = now.getMinutes();
+      const seconds = now.getSeconds();
+
+      const hourDeg = (hours + minutes / 60 + seconds / 3600) * 15;
+      const minuteDeg = (minutes + seconds / 60) * 6;
+      const secondDeg = seconds * 6;
+
+      hourHand.style.transform = `rotate(${hourDeg}deg)`;
+      minuteHand.style.transform = `rotate(${minuteDeg}deg)`;
+      secondHand.style.transform = `rotate(${secondDeg}deg)`;
+
+      const hStr = String(hours).padStart(2, '0');
+      const mStr = String(minutes).padStart(2, '0');
+      const sStr = String(seconds).padStart(2, '0');
+      digitalClock.innerText = `${hStr}:${mStr}:${sStr}`;
+    }
+
+    setInterval(updateClock, 1000);
+    updateClock();
+  </script>
+</body>
+</html>
